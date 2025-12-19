@@ -5,9 +5,9 @@ const csv = require("csv-parser")
 // Your Bot Token
 const BOT_TOKEN = "8523853145:AAHq-VbhtgOJeCxjCPLalKfqwK-M-helyPA"
 
-const userMessages = {} // Track all messages for deletion
+const userMessages = {}
 
-// Neural Network-like scoring weights
+
 const NEURAL_WEIGHTS = {
   age_exact: 45,
   age_close: 25,
@@ -27,7 +27,7 @@ const NEURAL_WEIGHTS = {
   documents_ready: 12,
 }
 
-// Load CSV data
+
 function loadSchemes() {
   return new Promise((resolve, reject) => {
     const schemes = []
@@ -156,7 +156,7 @@ function getSampleSchemes() {
 
 let schemes = []
 const userSessions = {}
-const userHistory = {} // Store search history
+const userHistory = {} 
 
 function trackMessage(userId, messageId) {
   if (!userMessages[userId]) {
@@ -173,7 +173,7 @@ async function deleteAllMessages(ctx, userId) {
   const messages = userMessages[userId]
   let deletedCount = 0
 
-  // Delete messages but don't delete the last confirmation message
+ 
   for (const msgId of messages) {
     try {
       await ctx.telegram.deleteMessage(userId, msgId)
@@ -181,26 +181,26 @@ async function deleteAllMessages(ctx, userId) {
       // Add small delay to avoid rate limiting
       await new Promise((resolve) => setTimeout(resolve, 50))
     } catch (error) {
-      // Some messages might be too old or already deleted
+    
       console.log(`Could not delete message ${msgId}`)
     }
   }
 
-  // Clear the tracked messages
+
   userMessages[userId] = []
   console.log(`✅ Deleted ${deletedCount} messages for user ${userId}`)
 }
 
-// Advanced Neural Network-like Matching
+
 function neuralMatchSchemes(userData) {
   if (schemes.length === 0) return []
 
   return schemes
     .map((scheme) => {
       let score = 0
-      const elig = (scheme.eligibility || "").toLowerCase()
+       const elig = (scheme.eligibility || "").toLowerCase()
       const desc = (scheme.description || "").toLowerCase()
-      const category = (scheme.category || "").toLowerCase()
+       const category = (scheme.category || "").toLowerCase()
       const tags = (scheme.tags || "").toLowerCase()
 
       // Layer 1: Age Analysis
@@ -219,7 +219,7 @@ function neuralMatchSchemes(userData) {
         }
       }
 
-      // Layer 2: Income Deep Analysis
+      
       if (userData.income !== undefined) {
         const incomeMatch = elig.match(/<=?\s*(\d+(?:\.\d+)?)/i)
         if (incomeMatch) {
@@ -234,7 +234,7 @@ function neuralMatchSchemes(userData) {
         }
       }
 
-      // Layer 3: Occupation Intelligence
+  
       if (userData.occupation) {
         const occLower = userData.occupation.toLowerCase()
         if (desc.includes(occLower) || elig.includes(occLower) || tags.includes(occLower)) {
@@ -242,7 +242,7 @@ function neuralMatchSchemes(userData) {
         }
       }
 
-      // Layer 4: Interest Mapping
+ 
       if (userData.interest && userData.interest !== "all") {
         if (category.includes(userData.interest)) {
           score += NEURAL_WEIGHTS.interest_direct
@@ -251,14 +251,14 @@ function neuralMatchSchemes(userData) {
         }
       }
 
-      // Layer 5: Social Category
+    
       if (userData.caste && userData.caste !== "skip") {
         if (elig.includes(userData.caste.toLowerCase())) {
           score += NEURAL_WEIGHTS.caste_match
         }
       }
 
-      // Layer 6: Gender-Specific
+     
       if (userData.gender) {
         const genderLower = userData.gender.toLowerCase()
         if (
@@ -270,7 +270,7 @@ function neuralMatchSchemes(userData) {
         }
       }
 
-      // Layer 7: Disability Support
+  
       if (userData.disability) {
         if (
           elig.includes("disability") ||
@@ -289,7 +289,7 @@ function neuralMatchSchemes(userData) {
         }
       }
 
-      // Layer 9: Geographic Matching
+     
       if (userData.location) {
         if (scheme.state === "All India") {
           score += NEURAL_WEIGHTS.location_all
@@ -298,7 +298,6 @@ function neuralMatchSchemes(userData) {
         }
       }
 
-      // Layer 10: Education Level
       if (userData.education) {
         const eduLower = userData.education.toLowerCase()
         if (elig.includes(eduLower) || desc.includes(eduLower)) {
@@ -306,14 +305,13 @@ function neuralMatchSchemes(userData) {
         }
       }
 
-      // Layer 11: Urgency Priority
+   
       if (userData.urgency === "high") {
         if (scheme.deadline && scheme.deadline !== "Ongoing") {
           score += NEURAL_WEIGHTS.urgency_high
         }
       }
 
-      // Layer 12: Document Readiness
       if (userData.hasDocuments) {
         const requiredDocs = (scheme.documents || "").toLowerCase()
         if (requiredDocs.includes("aadhaar") && userData.hasAadhaar) {
@@ -321,7 +319,7 @@ function neuralMatchSchemes(userData) {
         }
       }
 
-      // Bonus: Multi-benefit schemes
+
       const benefitCount = (scheme.benefits.match(/₹|lakh|assistance|support/gi) || []).length
       score += Math.min(benefitCount * 3, 15)
 
@@ -333,22 +331,20 @@ function neuralMatchSchemes(userData) {
     .map((x) => ({ ...x.scheme, matchScore: x.score }))
 }
 
-// AI Summarization
 function aiSummarize(scheme, userProfile) {
   const lines = []
 
-  // Personalized intro
+ 
   const age = userProfile.age
   if (age < 18) lines.push("🌟 Perfect for young individuals!")
   else if (age >= 18 && age < 30) lines.push("✨ Great opportunity for youth!")
   else if (age >= 30 && age < 60) lines.push("💼 Ideal for working professionals!")
   else lines.push("🙏 Excellent for senior citizens!")
 
-  // Key benefit
   const benefitParts = scheme.benefits.split(".").filter((x) => x.trim())
   lines.push(`\n💰 **Main Benefit:** ${benefitParts[0]?.trim() || "Financial assistance"}`)
 
-  // Why you match
+
   const matches = []
   if (userProfile.income && scheme.eligibility.match(/<=?\s*(\d+)/)) matches.push("✅ Income eligible")
   if (userProfile.occupation && scheme.description.toLowerCase().includes(userProfile.occupation.toLowerCase()))
@@ -360,7 +356,7 @@ function aiSummarize(scheme, userProfile) {
     lines.push(`\n**Why You Match:**\n${matches.join("\n")}`)
   }
 
-  // Application process
+ 
   const applySteps = scheme.apply
     .split(/[,.]/)
     .filter((x) => x.trim())
@@ -370,7 +366,7 @@ function aiSummarize(scheme, userProfile) {
     lines.push(`${i + 1}️⃣ ${step.trim()}`)
   })
 
-  // Documents
+ 
   if (scheme.documents) {
     const docs = scheme.documents
       .split(",")
@@ -379,7 +375,7 @@ function aiSummarize(scheme, userProfile) {
     lines.push(`\n📄 **Need:** ${docs.join(", ")}`)
   }
 
-  // Deadline
+  
   if (scheme.deadline && scheme.deadline !== "Ongoing") {
     lines.push(`\n⏰ **Deadline:** ${scheme.deadline}`)
   }
@@ -387,7 +383,7 @@ function aiSummarize(scheme, userProfile) {
   return lines.join("\n")
 }
 
-// Search schemes
+
 function searchSchemes(query) {
   const q = query.toLowerCase()
   return schemes
@@ -402,7 +398,7 @@ function searchSchemes(query) {
     .slice(0, 5)
 }
 
-// Get permanent menu keyboard with support button
+
 function getPermanentMenu() {
   const buttons = [
     [Markup.button.callback("🔍 Search Schemes", "menu_search")],
@@ -418,7 +414,7 @@ function getPermanentMenu() {
   return Markup.inlineKeyboard(buttons)
 }
 
-// Initialize bot
+
 const bot = new Telegraf(BOT_TOKEN)
 
 function getUserState(userId) {
@@ -599,7 +595,6 @@ async function showProfile(ctx, userId) {
   trackMessage(userId, sentMsg.message_id)
 }
 
-// Find schemes
 async function findSchemes(ctx, userId) {
   const state = getUserState(userId)
   const d = state.data
@@ -659,7 +654,7 @@ async function findSchemes(ctx, userId) {
   trackMessage(userId, msg3.message_id)
 }
 
-// Show previous matches
+
 async function showMatches(ctx, userId) {
   const history = userHistory[userId]
   if (!history || history.length === 0) {
@@ -687,7 +682,7 @@ async function showMatches(ctx, userId) {
   trackMessage(userId, sentMsg.message_id)
 }
 
-// Show categories
+
 async function showCategories(ctx) {
   const userId = ctx.from.id
   const categories = [...new Set(schemes.map((s) => s.category))]
@@ -713,7 +708,7 @@ function getCategoryEmoji(category) {
   return emojiMap[category] || "📋"
 }
 
-// Show help
+
 async function showHelp(ctx) {
   const userId = ctx.from.id
   const msg =
@@ -752,7 +747,7 @@ async function showHelp(ctx) {
   trackMessage(userId, sentMsg.message_id)
 }
 
-// Handle all text messages (including commands starting with /)
+
 bot.on("text", async (ctx) => {
   const userId = ctx.from.id
   const state = getUserState(userId)
@@ -762,7 +757,7 @@ bot.on("text", async (ctx) => {
 
   // Handle commands
   if (text.startsWith("/start")) {
-    // Initialize or reset user state
+ 
     userSessions[userId] = { step: "welcome", data: {} }
     
     const welcomeMsg = await ctx.replyWithMarkdown(
@@ -830,7 +825,6 @@ bot.on("text", async (ctx) => {
     return
   }
 
-  // Handle conversation steps (non-command text)
   switch (state.step) {
     case "name_input":
       state.data.name = text
@@ -946,7 +940,6 @@ bot.on("callback_query", async (ctx) => {
     console.log("Callback query answer error:", error.message)
   }
 
-  // Menu actions
   if (data === "menu_search") {
     state.step = "search_query"
     setUserState(userId, state)
@@ -1000,7 +993,7 @@ bot.on("callback_query", async (ctx) => {
     trackMessage(userId, msg.message_id)
   }
 
-  // Profile inputs
+  
   else if (data.startsWith("gender_")) {
     const genderMap = { gender_male: "Male", gender_female: "Female", gender_other: "Other", gender_skip: "skip" }
     state.data.gender = genderMap[data]
@@ -1044,7 +1037,7 @@ bot.on("callback_query", async (ctx) => {
     await showNextQuestion(ctx, userId)
   }
 
-  // Profile field updates
+  
   else if (data === "update_age") {
     state.step = "age_input"
     setUserState(userId, state)
@@ -1085,14 +1078,14 @@ bot.on("callback_query", async (ctx) => {
     try {
       await ctx.editMessageText("🗑️ Deleting all data and messages...")
 
-      // Delete all tracked messages
+  
       await deleteAllMessages(ctx, userId)
 
-      // Clear all user data
+    
       delete userSessions[userId]
       delete userHistory[userId]
 
-      // Send confirmation message (this will be the only message left)
+   
       const msg = await ctx.reply(
         "✅ **Everything deleted!**\n\nClick the button below to start fresh:",
         Markup.inlineKeyboard([[Markup.button.callback("🚀 Start Fresh", "start_fresh")]]),
@@ -1123,7 +1116,7 @@ bot.on("callback_query", async (ctx) => {
     userSessions[userId].step = "name_input"
   }
 
-  // View scheme details
+ 
   else if (data.startsWith("view_")) {
     const idx = Number.parseInt(data.replace("view_", ""))
     const scheme = state.searchResults?.[idx] || state.matchedSchemes?.[idx]
@@ -1191,7 +1184,7 @@ bot.on("callback_query", async (ctx) => {
   setUserState(userId, state)
 })
 
-// Start bot
+
 async function startBot() {
   try {
     console.log("🔄 Loading schemes...")
@@ -1219,5 +1212,6 @@ process.once("SIGINT", () => {
 })
 
 process.once("SIGTERM", () => bot.stop("SIGTERM"))
+
 
 startBot()
