@@ -1,6 +1,27 @@
 const { Telegraf, Markup } = require("telegraf")
 const fs = require("fs")
 const csv = require("csv-parser")
+const express = require('express')  // <-- Added for Render
+
+
+const app = express()
+
+
+app.get('/health', (req, res) => {
+  res.status(200).send('Bot is alive and running! 🚀')
+})
+
+
+app.get('/', (req, res) => {
+  res.send('GovLinq Bot is running behind the scenes! 🤖<br>Visit /health for status.')
+})
+
+
+const PORT = process.env.PORT || 3000
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ Health server running on port ${PORT}`)
+  console.log(`Visit https://govlinq.onrender.com/health to check`)
+})
 
 // Your Bot Token
 const BOT_TOKEN = "8523853145:AAHq-VbhtgOJeCxjCPLalKfqwK-M-helyPA"
@@ -1215,3 +1236,4 @@ process.once("SIGTERM", () => bot.stop("SIGTERM"))
 
 
 startBot()
+
