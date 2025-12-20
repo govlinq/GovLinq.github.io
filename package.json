@@ -1,15 +1,19 @@
 {
   "name": "govlinq-bot",
   "version": "1.0.0",
-  "main": "bot.js",
+  "description": "GovLinq Advanced Telegram Bot with AI-powered scheme matching",
+  "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
     "telegraf": "^4.15.3",
-    "csv-parser": "^3.0.0"
+    "csv-parser": "^3.0.0",
+    "express": "^4.19.2"
   },
   "engines": {
     "node": ">=18"
-  }
+  },
+  "author": "",
+  "license": "MIT"
 }
